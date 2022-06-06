@@ -46,9 +46,35 @@ const Country = (props) => {
       </div>
 
       <p>
-        <img src={country.flags.png} />
+        <img src={country.flags.png} alt={''} />
       </p>
     </div>
+  )
+}
+
+const ShownCountry = (props) => {
+  const country = props.country
+
+  return (
+    <div>
+      {country.name.common} <Button country={country} setFilter={props.setFilter} />
+    </div>
+  )
+  
+}
+
+const Button = (props) => {
+  const country = props.country
+  const handleClick = () => {
+    props.setFilter(country.name.common)
+  }
+  
+  return (
+    <>
+      <button onClick={handleClick}>
+        show
+      </button>
+    </>
   )
 }
 
@@ -61,7 +87,7 @@ const Countries = (props) => {
     <div>
       Too many matches, specify another filter
     </div>)
-  } else if(countriesToShow.length == 1) {
+  } else if(countriesToShow.length === 1) {
     return (
       <Country country={countriesToShow[0]}/>
     )
@@ -70,7 +96,7 @@ const Countries = (props) => {
       <div>
         {countriesToShow.map(country =>
           <div key={country.name.common}>
-            {country.name.common}
+            <ShownCountry country={country} setFilter={props.setFilter} />
           </div>
         )}
       </div>
@@ -96,7 +122,7 @@ const App = () => {
   return (
     <div>
     <Input text={'find countries'} change={setFilter} />
-    <Countries countries={countries} filter={filter}/>
+    <Countries countries={countries} filter={filter} setFilter={setFilter} />
     </div>
   )
 }

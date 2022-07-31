@@ -1,6 +1,25 @@
 import { useState, useEffect } from 'react'
 import personService from './services/persons'
 
+const Notification = ( {message, success} ) => {
+  if(message == null) {
+    return null
+  }
+  if(success) {
+    return (
+      <div className="success">
+      {message}
+      </div>
+    ) 
+  } else {
+    return (
+      <div className="error">
+        {message}
+      </div>
+    )
+  }
+}
+
 const Input = (props) => {
 
   const handleChange = (event) => {
@@ -42,6 +61,12 @@ const DeleteButton = (props) => {
       .then(() => {
         const filtered = props.persons.filter((person) => person.id !== props.id)
         props.setPersons(filtered)
+        props.setSuccessMessage(
+          `Deleted ${props.persons.find((x) => x.id === props.id).name}`
+        )
+        setTimeout(() => {
+          props.setSuccessMessage(null)
+        }, 5000)
       })
     }
   }
@@ -63,7 +88,7 @@ const Persons = (props) => {
     <>
       {personsToShow.map(person =>
         <div key={person.id}>
-          {person.name} {person.number} <DeleteButton id={person.id} persons={props.persons} setPersons={props.setPersons} />
+          {person.name} {person.number} <DeleteButton id={person.id} persons={props.persons} setPersons={props.setPersons} setSuccessMessage={props.setSuccessMessage} />
         </div>  
       )}
     </>
@@ -75,6 +100,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+  const [successMessage, setSuccessMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     personService
@@ -106,7 +133,21 @@ const App = () => {
                 person.id !== id ? person : response.data
               )
             )
+            setSuccessMessage(
+              `Changed the number of ${person.name} to ${person.number}`
+            )
+            setTimeout(() => {
+              setSuccessMessage(null)
+            }, 5000)
           })
+          .catch(error => {
+            setErrorMessage(
+              `Information of ${person.name} has already been removed from server`
+            )
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
+          })  
       }
       setNewName('')
       setNewNumber('')
@@ -119,17 +160,25 @@ const App = () => {
         setPersons(persons.concat(response.data))
         setNewName('')
         setNewNumber('')
+        setSuccessMessage(
+          `Added ${person.name}`
+        )
+        setTimeout(() => {
+          setSuccessMessage(null)
+        }, 5000)
       })
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={successMessage} success={true} />
+      <Notification message={errorMessage} success={false}/>
       <Input text={'filter shown with'} value={newFilter} change={setNewFilter} />
       <h2>add a new</h2>
       <PersonForm addPerson={addPerson} newName={newName} setNewName={setNewName} newNumber={newNumber} setNewNumber={setNewNumber}/>
       <h2>Numbers</h2>
-      <Persons persons={persons} newFilter={newFilter} setPersons={setPersons} />
+      <Persons persons={persons} newFilter={newFilter} setPersons={setPersons} setSuccessMessage={setSuccessMessage} />
     </div>
   )
 
